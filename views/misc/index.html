@@ -1,0 +1,23 @@
+import $header from components
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+
+  <body>
+
+    <div as="component" state={1} id="count">
+        <ul>
+            [...<li each="array">{element}</li>]
+        </ul>
+
+        <button onClick={#count.state++}></button>
+    </div>
+
+    <script src="kayak.dev/script"></script>
+  </body>
+</html>
