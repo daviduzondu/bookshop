@@ -2,9 +2,10 @@ const fs = require("fs");
 const fsPromises = require("fs").promises;
 const path = require('path');
 const {absolutePath} = require("../lib/helpers")
-// const products = [];
 const filePath = absolutePath("data/products.json");
 const {v4: uuidv4} = require("uuid");
+const {Cart} = require("./cart");
+
 
 const getProductsFromFile = cb => {
     fs.readFile(filePath, (err, fileContent) => {
@@ -34,8 +35,10 @@ class Product {
         } catch (e) {
             console.log(e);
         } finally {
+            let delProduct = products.find(x => x.id === id);
             products = products.filter(x => x.id !== id);
             await fsPromises.writeFile(filePath, JSON.stringify(products), {encoding: "utf-8"});
+            if ((await Cart.fetchCart()).products.length > 0) await Cart.deleteProduct(id, delProduct.price);
         }
     }
 
@@ -46,6 +49,7 @@ class Product {
         //     console.log(err);
         //   });
         // });
+
         let fileContents;
         let products = [];
         try {

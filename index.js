@@ -5,8 +5,14 @@ const shopRoutes = require("./routes/shop.js");
 const bodyParser = require("body-parser");
 const { absolutePath } = require("./lib/helpers.js");
 const {get404} = require("./controllers/error");
+const db = require("./lib/db")
 const app = express();
 
+async function fetchData(){
+    console.log(await db.execute("select * from products"))
+}
+
+fetchData();
 // app.set('view engine', 'ejs');
 // app.set('views', 'views/ejs');
 app.set('view engine', 'pug');

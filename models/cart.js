@@ -1,14 +1,11 @@
 const fsPromises = require('fs').promises;
 const path = require("path")
 const {absolutePath} = require("../lib/helpers")
-
 const filePath = absolutePath("data/cart.json")
 
 class Cart {
 
     static async addProduct(id, productPrice) {
-        console.log("Price is: ", productPrice);
-        //     Fetch the previous cart
         let cart = {products: [], totalPrice: 0};
         try {
             const previousCartContents = await fsPromises.readFile(filePath, {encoding: "utf-8"});
@@ -32,19 +29,41 @@ class Cart {
             cart.totalPrice = cart.totalPrice + Number(productPrice);
             await fsPromises.writeFile(filePath, JSON.stringify(cart));
         }
-        //     Analuze the cart => Find the existing product
-        //     Add new products/increase quantity
     }
-    static async deleteProduct(id, price){
-        let cart = {products: [], totalPrice:0};
-        try{
-            const previousCartContents = await  fsPromises.readFile(filePath, {encoding:"utf-8"});
+
+    static async deleteProduct(id, price) {
+        let cart = {products: [], totalPrice: 0};
+        try {
+            const previousCartContents = await fsPromises.readFile(filePath, {encoding: "utf-8"});
             cart = JSON.parse(previousCartContents);
-        }catch (e){
+        } catch (e) {
             console.log(e);
         } finally {
-            const updatedProduct = cart.products.filter(prod => prod.id === id);
-            // const
+            const delCartProduct = cart.products.find(prod => prod.id === id);
+            cart.products = cart.products.filter(prod => prod.id !== id);
+            cart.totalPrice = cart.totalPrice - (Number(price) * delCartProduct.qty);
+            await fsPromises.writeFile(filePath, JSON.stringify(cart));
+        }
+    }
+
+    static async fetchCart() {
+        try {
+            const {Product} = require("./product");
+            let cartContents = await fsPromises.readFile(filePath, {encoding: "utf-8"});
+            let cart = JSON.parse(cartContents);
+
+            cart.products = await Promise.all(cart.products.map(async (x) => ({
+                id: x.id,
+                qty: x.qty,
+                imageUrl: (await Product.findById(x.id)).imageUrl,
+                price: (await Product.findById(x.id)).price,
+                title: (await Product.findById(x.id)).title,
+                description: (await Product.findById(x.id)).description
+            })));
+            return cart;
+        } catch (e) {
+            console.log(e);
+            return {products: [], totalPrice: 0};
         }
     }
 }
