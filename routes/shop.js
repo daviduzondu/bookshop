@@ -8,9 +8,9 @@ const {getProducts, getCart, getOrders,  getProductIndex, getProduct, postCart, 
 router.get("/", getProductIndex);
 router.get("/cart", getCart);
 router.post("/cart", postCart);
-router.get("/orders", getOrders);
+// router.get("/orders", getOrders);
 router.get("/products", getProducts);
 router.get("/products/:productId", getProduct )
-router.get("/cart", getCart);
-router.post("/delete-from-cart", postDeleteCartItem)
+// router.get("/cart", getCart);
+// router.post("/delete-from-cart", postDeleteCartItem)
 module.exports = router;

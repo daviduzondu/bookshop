@@ -1,5 +1,5 @@
 const {Product} = require("../models/product");
-
+const {v4: uuidv4} = require("uuid");
 // Admin Controllers
 const getAddProduct = (req, res, next) => {
     let path = "/admin/add-product"
@@ -12,10 +12,12 @@ const getAddProduct = (req, res, next) => {
 const getEditProduct = async (req, res, next) => {
     const editMode = req.query.edit;
     const prodId = req.params.productId;
-    const product = await Product.findById(prodId);
+    // const product = await Product.findByPk(prodId);
+    const [product] = await req.user.getProducts({where: {id: prodId}});
     if (editMode !== "true") {
         return res.redirect("/");
     }
+
     if (!product) {
         return res.redirect('/');
     }
@@ -27,34 +29,42 @@ const getEditProduct = async (req, res, next) => {
         product: product
     });
 };
-const postDeleteProduct = async (req, res, next) =>{
-    const {productId:id} = req.body;
-    await Product.delete(id);
+
+const postDeleteProduct = async (req, res, next) => {
+    const {productId: id} = req.body;
+    const match = await Product.findByPk(id);
+    await match.destroy();
     res.redirect("/admin/products");
 }
 
-const postEditProduct = async (req, res, next) =>{
-    const {title, imageUrl, price, description, productId:id} = req.body;
-    const updatedProduct = new Product(id, title, imageUrl, price, description);
-     updatedProduct.save();
-     res.redirect("/admin/products");
-    console.log(id);
+const postEditProduct = async (req, res, next) => {
+    const {title, imageUrl, price, description, productId: id} = req.body;
+    let updatedProduct = (await Product.findByPk(id))
+
+    await updatedProduct.update({title, imageUrl, price, description, id});
+    res.redirect("/admin/products");
 }
 
-const postAddProduct = (req, res, next) => {
+const postAddProduct = async (req, res, next) => {
     const {title, imageUrl, price, description} = req.body;
-    console.log(req.body)
-    const product = new Product(null, title, imageUrl, price, description);
-    product.save();
+    await req.user.createProduct({
+        id: uuidv4(),
+        title: title,
+        price: price,
+        imageUrl: imageUrl,
+        description: description,
+        userId: req.user.id
+    })
+    console.log(req.body);
+    // const product = new Product(null, title, imageUrl, price, description);
+    // product.save();
     res.redirect('/products');
 };
 
-
 const getAdminProducts = async (req, res, next) => {
-    let products;
-    products = (await Product.fetchAll()).reverse();
+    let  products= (await req.user.getProducts());
     let path = "/admin/products"
-    res.render('admin/products', {path, docTitle: "Admin Products", prods: products})
+    res.render('admin/products', {path, docTitle: "Admin Products", prods: products.reverse()})
 }
 
 
