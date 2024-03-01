@@ -1,5 +1,4 @@
 const {Product} = require("../models/product");
-const {Cart} = require("../models/cart");
 const {v4: uuidv4} = require("uuid");
 const getProducts = async (req, res, next) => {
     console.log(req.user);
@@ -30,8 +29,6 @@ const getOrders = (req, res, next) => {
 const getCart = async (req, res, next) => {
     const cart = await req.user.getCart();
     const products = await cart.getProducts();
-    console.log("User Cart", cart);
-
     res.render("shop/cart", {path: "/cart", docTitle: "Your Cart", prods: products});
     // console.log("Your cart is:", req.user.cart);
     // console.log("Products are:", await Promise.all(cart.products));
@@ -42,21 +39,28 @@ const getCart = async (req, res, next) => {
 
 const postDeleteCartItem = async (req, res, next) => {
     const {productId: id, price} = req.body;
-    await Cart.deleteProduct(id, price);
+    const cart = await req.user.getCart();
+    const [productToDel] = await cart.getProducts({where: {id: id}});
+    productToDel.cartItem.destroy();
     res.redirect("/cart");
+    // console.log(productToDel.cartItem);
+    // await Cart.deleteProduct(id, price);
 }
 
 const postCart = async (req, res, next) => {
     const {title, imageUrl, price, description, productId: id} = req.body;
     console.log("Posting...", id);
 
+    const productToAdd = await Product.findByPk(id);
     const cart = await req.user.getCart();
     const [products] = await cart.getProducts({where: {id: id}});
     let newQuantity = 1;
     if (products) {
         //     ...
+        const oldQuantity = products.cartItem.quantity;
+        newQuantity = oldQuantity + 1;
+        await cart.addProduct(productToAdd, {through: {quantity: newQuantity, id: uuidv4()}})
     } else {
-        const productToAdd = await Product.findByPk(id);
         await cart.addProduct(productToAdd, {through: {quantity: newQuantity, id: uuidv4()}});
     }
 

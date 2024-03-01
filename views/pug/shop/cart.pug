@@ -17,7 +17,7 @@ block content
                         .card__content
                             h2.product__price $#{product.price}
                             p.product__description #{product.description}
-                            p.product__description #{product.qty}e
+                            p.product__description #{product.cartItem.quantity}
                             .card__actions
                                 a(href=`/products/${product.id}` class="btn") Details
                                 form(action="/delete-from-cart" method="post").center-card

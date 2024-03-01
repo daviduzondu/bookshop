@@ -1,5 +1,4 @@
 const express = require("express");
-const serveStatic = require('serve-static');
 const {adminRouter, product} = require("./routes/admin.js");
 const shopRoutes = require("./routes/shop.js");
 const bodyParser = require("body-parser");
@@ -10,6 +9,8 @@ const {Product} = require("./models/product");
 const {User} = require("./models/user");
 const {Cart} = require("./models/cart");
 const {CartItem} = require("./models/cart-item");
+const {Order} = require("./models/order");
+const {OrderItem} = require("./models/order-item");
 const {v4: uuidv4} = require("uuid");
 const app = express();
 
