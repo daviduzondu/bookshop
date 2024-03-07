@@ -17,12 +17,14 @@ block content
                         .card__content
                             h2.product__price $#{product.price}
                             p.product__description #{product.description}
-                            p.product__description #{product.cartItem.quantity}
+                            p.product__description Quantity: #{product.quantity}
                             .card__actions
-                                a(href=`/products/${product.id}` class="btn") Details
+                                a(href=`/products/${product._id}` class="btn") Details
                                 form(action="/delete-from-cart" method="post").center-card
                                     button.btn(type="submit") Delete
-                                    input(type="hidden" name="productId" value=`${product.id}`)
+                                    input(type="hidden" name="productId" value=`${product._id}`)
                                     input(type="hidden" name="price" value=`${product.price}`)
+            form(action="/create-order" method="POST")
+                button.btn(type="submit") Order Now
         else
             h1 No products in cart
