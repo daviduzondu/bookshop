@@ -1,9 +1,9 @@
-const {Product} = require("../models/product");
+const {productModel} = require("../models/product");
 const {v4: uuidv4} = require("uuid");
-const {User} = require("../models/user");
+// const {User} = require("../models/user");
 
 const getProducts = async (req, res, next) => {
-    let products = await Product.fetchAll();
+    let products = await productModel.find();
     res.render('shop/product-list', {
         prods: products.reverse(),
         docTitle: 'Shop',
@@ -17,7 +17,7 @@ const getProducts = async (req, res, next) => {
 const getProduct = async (req, res, next) => {
 
     const prodID = req.params.productId;
-    const match = await Product.getProductById(prodID);
+    const match = await productModel.findById(prodID);
     res.render('shop/product-details', {prods: match, path: "/products"});
     // res.redirect("/");
 }
@@ -62,7 +62,8 @@ const postCart = async (req, res, next) => {
 // }
 //
 const getProductIndex = async (req, res, next) => {
-    let products = await Product.fetchAll();
+    let products = await productModel.find();
+    console.log(products);
     res.render('shop/index', {
         prods: products.reverse(),
         docTitle: 'Shop',

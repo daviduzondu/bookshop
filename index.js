@@ -6,10 +6,11 @@ const {absolutePath} = require("./lib/helpers.js");
 const {get404} = require("./controllers/error");
 const {v4: uuidv4} = require("uuid");
 const app = express();
-const connectToDB = require("./lib/db");
-const {User} = require("./models/user");
+const mongoose = require("mongoose");
+const {userModel} = require("./models/user");
 let base;
-
+const password = "gDNvvT00YgAQ00IM";
+const url = `mongodb+srv://daviduzondu:${password}@cluster0.usbmnfm.mongodb.net/shop?retryWrites=true&w=majority&appName=Cluster0`;
 
 app.set('view engine', 'pug');
 app.set('views', 'views/pug');
@@ -19,30 +20,30 @@ app.use(bodyParser.urlencoded());
 
 app.use(express.static(absolutePath('/public'), {redirect: false}));
 
-app.use(async (req, res, next)=>{
-    const {_id:id, name, email, cart} = await User.findById("65e5d29f968ecee218360cde");
-    req.user = new User(name, email, cart, id);
+app.use(async (req, res, next) => {
+    req.user = await userModel.findById("65eed9e14fef4608ce1c1b54");
     next();
 })
+
 app.use(shopRoutes);
 app.use(adminRouter);
 
 app.use(get404);
 
-const startApp = async () => {
-    const client = await connectToDB();
-    base = client.db();
-}
 
 (async () => {
+    await mongoose.connect(url);
+
+    if (!(await userModel.findOne())) {
+        const user = new userModel({
+            name: "David",
+            email: "david@test.com",
+            cart: {
+                items: []
+            }
+        });
+        user.save();
+    }
+
     app.listen(3000);
-    await startApp();
 })();
-
-async function getDB() {
-    await startApp();
-    return base;
-}
-
-
-module.exports = {getDB};

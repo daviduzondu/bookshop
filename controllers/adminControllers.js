@@ -1,4 +1,4 @@
-const {Product} = require("../models/product");
+const {productModel} = require("../models/product");
 const {v4: uuidv4} = require("uuid");
 // Admin Controllers
 const getAddProduct = (req, res, next) => {
@@ -12,7 +12,7 @@ const getAddProduct = (req, res, next) => {
 
 const postAddProduct = async (req, res, next) => {
     const {title, imageUrl, price, description} = req.body;
-    const product = new Product(null, title, price, description, imageUrl, req.user.id);
+    const product = new productModel({title:title, price:price, description:description, imageUrl:imageUrl, userId: req.user});
     await product.save();
     res.redirect('/products');
 };
@@ -22,7 +22,7 @@ const getEditProduct = async (req, res, next) => {
     // const editMode = req.query.edit;
     const prodId = req.params.productId;
     // const product = await Product.findByPk(prodId);
-    const product = await Product.getProductById(prodId);
+    const product = await productModel.findById(prodId);
     // if (editMode !== "true") {
     //     return res.redirect("/");
     // }
@@ -41,19 +41,24 @@ const getEditProduct = async (req, res, next) => {
 
 const postEditProduct = async (req, res, next) => {
     const {title, imageUrl, price, description, productId: id} = req.body;
-    let product = new Product(id, title, price, description, imageUrl, req.user.id);
-    await product.save();
+    let productToUpdate = await productModel.findById(id);
+    productToUpdate.title = title;
+    productToUpdate.imageUrl = imageUrl;
+    productToUpdate.price = price;
+    productToUpdate.description = description;
+    productToUpdate.productId = id;
+    await productToUpdate.save();
 
     res.redirect("/admin/products");
 }
 const postDeleteProduct = async (req, res, next) => {
     const {productId: id} = req.body;
-    await Product.deleteById(id);
+    await productModel.findByIdAndDelete(id);
     res.redirect("/admin/products");
 }
 
 const getAdminProducts = async (req, res, next) => {
-    let products = (await Product.fetchAll());
+    let products = (await productModel.find());
 
     let path = "/admin/products"
     res.render('admin/products', {path, docTitle: "Admin Products", prods: products.reverse()})
