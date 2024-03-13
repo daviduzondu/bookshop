@@ -6,7 +6,8 @@ const getAddProduct = (req, res, next) => {
     // res.send("Hello")
     res.render('admin/edit-product', {
         docTitle: 'Add Product',
-        path
+        path,
+        isAuthenticated: req.session.isLoggedIn
     });
 };
 
@@ -35,7 +36,8 @@ const getEditProduct = async (req, res, next) => {
         docTitle: 'Edit Product',
         path,
         editing: true,
-        product: product
+        product: product,
+        isAuthenticated: req.session.isLoggedIn
     });
 };
 
@@ -59,9 +61,8 @@ const postDeleteProduct = async (req, res, next) => {
 
 const getAdminProducts = async (req, res, next) => {
     let products = (await productModel.find());
-
     let path = "/admin/products"
-    res.render('admin/products', {path, docTitle: "Admin Products", prods: products.reverse()})
+    res.render('admin/products', {path, docTitle: "Admin Products", prods: products.reverse(), isAuthenticated: req.session.isLoggedIn})
 }
 //
 

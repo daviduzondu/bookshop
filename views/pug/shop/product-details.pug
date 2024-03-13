@@ -15,6 +15,7 @@ block content
                     img(src=`${prods.imageUrl || "https://cdn.pixabay.com/photo/2016/03/31/20/51/book-1296045_960_720.png"}` alt="A Book")
                 h2.product__price $#{prods.price}
                 p.product__description #{prods.description}
-                form(action="/cart" method="post").center-card
-                    button.btn(type="submit") Add to Cart
-                    input(type="hidden" name="productId" value=`${prods.id}`)
+                if (isAuthenticated)
+                    form(action="/cart" method="post").grid
+                        button.btn(type="submit") Add to Cart
+                        input(type="hidden" name="productId" value=`${prods.id}`)
