@@ -16,4 +16,5 @@ block content
             .form-control
                 label(for="password") Password
                 input(type="password", name="password", id="password")
+                input(name="_csrf" value=`${csrfToken}` type="hidden")
             button.btn(type="submit") Login

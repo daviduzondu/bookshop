@@ -50,19 +50,17 @@ const getCart = async (req, res, next) => {
 const postDeleteCartItem = async (req, res, next) => {
     const {productId: id} = req.body;
     const operation = await req.user.deleteItemFromCart(id);
-    // const cart = await req.user.getCart();
-    // const [productToDel] = await cart.getProducts({where: {id: id}});
-    // productToDel.cartItem.destroy();
     res.redirect("/cart");
 }
 const postOrder = async (req, res, next) => {
+    try {
     const products = (await req.user.populate("cart.items.productId")).cart.items.map(x => ({
         quantity: x.quantity,
         productData: {...x.productId._doc}
     }))
     const order = new orderModel({
         user: {
-            name: req.user.name,
+            email: req.user.email,
             userId: req.user
         },
         products: products
@@ -70,6 +68,9 @@ const postOrder = async (req, res, next) => {
     req.user.clearCart();
     order.save();
     res.redirect("/orders");
+    } catch (e){
+        console.log(e);
+    }
 }
 const postCart = async (req, res, next) => {
     const {productId: id} = req.body;
@@ -81,7 +82,7 @@ const postCart = async (req, res, next) => {
 // const postCheckout = (req, res, next) => {
 //     res.render("shop/checkout")
 // }
-//
+
 // const getCheckout = (req, res, next) => {
 //     res.render("shop/checkout", {
 //
@@ -97,7 +98,8 @@ const getProductIndex = async (req, res, next) => {
         path: '/',
         hasProducts: products.length > 0,
         activeShop: true,
-        productCSS: true
+        productCSS: true,
+        csrfToken: req.csrfToken()
     });
 }
 

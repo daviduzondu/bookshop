@@ -1,32 +1,56 @@
 const {userModel} = require("../models/user");
+const bcrypt = require("bcryptjs");
 
 function getLogin(req, res, next) {
     res.render("auth/login", {
         path: "/login",
         docTitle: "Login",
-        isAuthenticated: false
     })
 }
 
 async function postLogin(req, res, next) {
-    const user = await userModel.findById("65eed9e14fef4608ce1c1b54");
+    const {email, password} = req.body;
+    const user = await userModel.findOne({email: email});
+    if (!user) {
+        return res.redirect("/login");
+    }
+    const correctPassword = await bcrypt.compare(password, user.password);
+    if (!correctPassword){
+        return res.redirect("/login");
+    }
     req.session.isLoggedIn = true;
     req.session.user = user;
-    req.session.save(err => {
+    return req.session.save(err => {
         console.log(err);
-        res.redirect("/");
+        return res.redirect("/");
     })
 }
 
-function postSignup(req, res, next){
+async function postSignup(req, res, next) {
+    const {email, password, confirmPassword} = req.body;
+    try {
+        const existingUserDoc = await userModel.findOne({email: email});
+        if (existingUserDoc) {
+            return res.redirect("/login");
+        }
+        const hashedPassword = await bcrypt.hash(password, 15);
+        const newUser = new userModel({
+            email: email,
+            password: hashedPassword,
+            cart: {items: []}
+        });
+        await newUser.save();
+        res.redirect("/login")
+    } catch (e) {
+        console.error(e);
+    }
 
 }
 
-function getSignup(req, res, next){
+function getSignup(req, res, next) {
     res.render("auth/signup", {
-        path:"/signup",
-        docTitle:"Signup",
-        isAuthenticated: false
+        path: "/signup",
+        docTitle: "Signup",
     })
 }
 

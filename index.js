@@ -10,6 +10,8 @@ const app = express();
 const mongoose = require("mongoose");
 const session = require("express-session");
 const mongoStore = require("connect-mongodb-session")(session);
+const csrf = require("csurf");
+// const flash
 const {userModel} = require("./models/user");
 const password = "gDNvvT00YgAQ00IM";
 const MONGO_URI = `mongodb+srv://daviduzondu:${password}@cluster0.usbmnfm.mongodb.net/shop?retryWrites=true&w=majority&appName=Cluster0`;
@@ -18,27 +20,27 @@ const store = new mongoStore({
     collection: "sessions"
 });
 
-// Okay so this is how you make things work!
+const csrfProtection = csrf();
 
 app.set('view engine', 'pug');
 app.set('views', 'views/pug')
 app.use(bodyParser.urlencoded());
 app.use(express.static(absolutePath('/public'), {redirect: false}));
 app.use(session({secret: 'my secret', resave: false, saveUninitialized: false, store: store}));
-
+app.use(csrfProtection);
 app.use(async (req, res, next) => {
-
     if (!req.session.user) {
         return next();
     }
     const user = await userModel.findById(req.session.user._id);
     req.user = user;
     next();
-    // if (!req.session.user){
-    //     return next();
-    // }
-    // req.user = await userModel.findById("65eed9e14fef4608ce1c1b54");
-    // next();
+});
+
+app.use((req, res, next)=>{
+    res.locals.isAuthenticated = req.session.isLoggedIn;
+    res.locals.csrfToken = req.csrfToken();
+    next();
 })
 
 app.use(shopRoutes);
@@ -50,17 +52,5 @@ app.use(get404);
 
 (async () => {
     await mongoose.connect(MONGO_URI);
-
-    if (!(await userModel.findOne())) {
-        const user = new userModel({
-            name: "David",
-            email: "david@test.com",
-            cart: {
-                items: []
-            }
-        });
-        user.save();
-    }
-
     app.listen(3100);
 })();

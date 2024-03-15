@@ -21,10 +21,12 @@ block content
                             .card__actions
                                 a(href=`/products/${product._id}` class="btn") Details
                                 form(action="/delete-from-cart" method="post").center-card
+                                    input(name="_csrf" value=`${csrfToken}` type="hidden")
                                     button.btn(type="submit") Delete
                                     input(type="hidden" name="productId" value=`${product._id}`)
                                     input(type="hidden" name="price" value=`${product.price}`)
             form(action="/create-order" method="POST").grid
+                input(name="_csrf" value=`${csrfToken}` type="hidden")
                 button.btn(type="submit") Order Now
         else
             h1 No products in cart

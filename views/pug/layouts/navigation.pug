@@ -27,6 +27,7 @@ main.main-header
             else
                 li.main-header__item
                     form(action="/logout" method="post")
+                        input(name="_csrf" value=`${csrfToken}` type="hidden")
                         button(class=path === '/logout' ? 'active' : '' type="submit") Logout
 
 nav.mobile-nav
@@ -35,11 +36,22 @@ nav.mobile-nav
             a(class=path === '/' ? 'active' : '', href='/') Shop
         li.mobile-nav__item
             a(class=path === '/products' ? 'active' : '', href='/products') Products
-        li.mobile-nav__item
-            a(class=path === '/cart' ? 'active' : '', href='/cart') Cart
-        li.mobile-nav__item
-            a(class=path === '/orders' ? 'active' : '', href='/orders') Orders
-        li.mobile-nav__item
-            a(class=path === '/admin/add-product' ? 'active' : '', href='/admin/add-product') Add Product
-        li.mobile-nav__item
-            a(class=path === '/admin/products' ? 'active' : '', href='/admin/products') Admin Products
+        if (isAuthenticated)
+            li.mobile-nav__item
+                a(class=path === '/cart' ? 'active' : '', href='/cart') Cart
+            li.mobile-nav__item
+                a(class=path === '/orders' ? 'active' : '', href='/orders') Orders
+            li.mobile-nav__item
+                a(class=path === '/admin/add-product' ? 'active' : '', href='/admin/add-product') Add Product
+            li.mobile-nav__item
+                a(class=path === '/admin/products' ? 'active' : '', href='/admin/products') Admin Products
+        if  (!isAuthenticated)
+            li.mobile-nav__item
+                a(class=path === '/login' ? 'active' : '', href='/login') Login
+            li.mobile-nav__item
+                a(class=path === '/signup' ? 'active' : '', href='/signup') Sign Up
+        else
+            li.mobile-nav__item
+                form(action="/logout" method="post")
+                    input(name="_csrf" value=`${csrfToken}` type="hidden")
+                    button(class=path === '/logout' ? 'active' : '' type="submit") Logout

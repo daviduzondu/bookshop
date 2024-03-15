@@ -21,6 +21,7 @@ block content
                                 a(href=`/products/${product._id}` class="btn") Details
                                 if (isAuthenticated)
                                     form(action="/cart" method="post").center-card
+                                        input(name="_csrf" value=`${csrfToken}` type="hidden")
                                         button.btn(type="submit") Add to Cart
                                         input(type="hidden" name="productId" value=`${product._id}`)
         else
