@@ -11,7 +11,7 @@ const mongoose = require("mongoose");
 const session = require("express-session");
 const mongoStore = require("connect-mongodb-session")(session);
 const csrf = require("csurf");
-// const flash
+const flash = require("connect-flash");
 const {userModel} = require("./models/user");
 const password = "gDNvvT00YgAQ00IM";
 const MONGO_URI = `mongodb+srv://daviduzondu:${password}@cluster0.usbmnfm.mongodb.net/shop?retryWrites=true&w=majority&appName=Cluster0`;
@@ -28,6 +28,7 @@ app.use(bodyParser.urlencoded());
 app.use(express.static(absolutePath('/public'), {redirect: false}));
 app.use(session({secret: 'my secret', resave: false, saveUninitialized: false, store: store}));
 app.use(csrfProtection);
+app.use(flash());
 app.use(async (req, res, next) => {
     if (!req.session.user) {
         return next();
