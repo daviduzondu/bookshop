@@ -13,6 +13,7 @@ const mongoStore = require("connect-mongodb-session")(session);
 const csrf = require("csurf");
 const flash = require("connect-flash");
 const {userModel} = require("./models/user");
+const path = require("path");
 const password = "gDNvvT00YgAQ00IM";
 const MONGO_URI = `mongodb+srv://daviduzondu:${password}@cluster0.usbmnfm.mongodb.net/shop?retryWrites=true&w=majority&appName=Cluster0`;
 const store = new mongoStore({
@@ -38,9 +39,12 @@ app.use(async (req, res, next) => {
     next();
 });
 
+// app.use();
 app.use((req, res, next)=>{
+    const userEmail = req.user?.email;
     res.locals.isAuthenticated = req.session.isLoggedIn;
     res.locals.csrfToken = req.csrfToken();
+    res.locals.userEmail = userEmail ?? "Guest";
     next();
 })
 
@@ -51,7 +55,8 @@ app.use(authRoutes)
 app.use(get404);
 
 
-(async () => {
-    await mongoose.connect(MONGO_URI);
+(() => {
+    mongoose.connect(MONGO_URI);
     app.listen(3100);
 })();
+

@@ -11,16 +11,18 @@ block styles
 block content
     main
         if (errorMessage.length > 0)
-            .user-message.user-message--error #{errorMessage[0]}
-        form.login-form(action="/signup", method="POST")
+            each message in errorMessage
+                .user-message.user-message--error #{message}
+                br
+        form.login-form(action="/signup", method="POST" novalidate)
             .form-control
                 label(for="email") E-Mail
-                input(type="email", name="email", id="email")
+                input(type="email", name="email", id="email", value=`${oldInput ? oldInput.email : ""}`)
             .form-control
                 label(for="password") Password
-                input(type="password", name="password", id="password")
+                input(type="password", name="password", id="password", value=`${oldInput ? oldInput.password:""}`)
             .form-control
                 label(for="confirmPassword") Confirm Password
-                input(type="password", name="confirmPassword", id="confirmPassword")
+                input(type="password", name="confirmPassword", id="confirmPassword", value=`${oldInput ? oldInput.confirmPassword:""}`)
                 input(name="_csrf" value=`${csrfToken}` type="hidden")
-            button.btn(type="submit") Login
+            button.btn(type="submit") Sign up

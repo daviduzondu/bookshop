@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const nodemailer = require("nodemailer");
 const sendGridTransport = require("nodemailer-sendgrid-transport");
 const crypto = require("crypto");
+const {validationResult} = require("express-validator");
 
 const transporter = nodemailer.createTransport({
     host: "sandbox.smtp.mailtrap.io",
@@ -43,26 +44,35 @@ async function postLogin(req, res, next) {
 
 async function postSignup(req, res, next) {
     const {email, password, confirmPassword} = req.body;
+    const errors = validationResult(req);
+    console.log(errors);
+    if (!errors.isEmpty()){
+        return res.status(422).render("auth/signup", {
+            path: "/signup",
+            docTitle: "Signup",
+            errorMessage: errors.array().map(x=>`${x.msg}`),
+            oldInput: {email, password, confirmPassword}
+        });
+    }
     try {
-        const existingUserDoc = await userModel.findOne({email: email});
-        if (existingUserDoc) {
-            req.flash("error", "User already exists")
-            return res.redirect("/signup");
-        }
         const hashedPassword = await bcrypt.hash(password, 15);
         const newUser = new userModel({
             email: email,
             password: hashedPassword,
             cart: {items: []}
         });
-        await newUser.save();
-        await transporter.sendMail({
-            to: email,
-            from: "david@daviduzondu.com",
-            subject: "Welcome to Shop!",
-            html: "<h1>You have successfully signed up!</h1>"
-        })
-        res.redirect("/login")
+        try {
+            await newUser.save();
+            // await transporter.sendMail({
+            //     to: email,
+            //     from: "david@daviduzondu.com",
+            //     subject: "Welcome to Shop!",
+            //     html: "<h1>You have successfully signed up!</h1>"
+            // })
+        } catch (e) {
+            console.log("Error:", e);
+        }
+        res.redirect("/login");
     } catch (e) {
         console.error(e);
     }
@@ -147,17 +157,35 @@ async function getNewPassword(req, res, next) {
     }
 }
 
-async function postNewPassword(req, res, next){
+async function postNewPassword(req, res, next) {
     const {password, userId, passwordToken} = req.body;
 
     try {
-        const user = await userModel.findOne({resetToken: passwordToken, resetTokenExpiration: {$gt:Date.now()}, _id:userId});
+        const user = await userModel.findOne({
+            resetToken: passwordToken,
+            resetTokenExpiration: {$gt: Date.now()},
+            _id: userId
+        });
         user.password = await bcrypt.hash(password, 12);
-        user.resetToken= null;
-        user.rese
-    } catch(e){
+        user.resetToken = undefined;
+        user.resetTokenExpiration = undefined;
+        await user.save();
+        res.redirect("/login");
+
+    } catch (e) {
         console.log(e);
     }
 
 }
-module.exports = {getLogin, postLogin, postLogout, getSignup, postSignup, getReset, postReset, getNewPassword, postNewPassword}
+
+module.exports = {
+    getLogin,
+    postLogin,
+    postLogout,
+    getSignup,
+    postSignup,
+    getReset,
+    postReset,
+    getNewPassword,
+    postNewPassword
+}

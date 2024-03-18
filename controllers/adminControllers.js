@@ -1,9 +1,9 @@
 const {productModel} = require("../models/product");
 const {v4: uuidv4} = require("uuid");
+
 // Admin Controllers
 const getAddProduct = (req, res, next) => {
     let path = "/admin/add-product"
-    // res.send("Hello")
     res.render('admin/edit-product', {
         docTitle: 'Add Product',
         path,
@@ -13,21 +13,21 @@ const getAddProduct = (req, res, next) => {
 
 const postAddProduct = async (req, res, next) => {
     const {title, imageUrl, price, description} = req.body;
-    const product = new productModel({title:title, price:price, description:description, imageUrl:imageUrl, userId: req.user});
+    const product = new productModel({
+        title: title,
+        price: price,
+        description: description,
+        imageUrl: imageUrl,
+        userId: req.user
+    });
     await product.save();
     res.redirect('/products');
 };
 
 
 const getEditProduct = async (req, res, next) => {
-    // const editMode = req.query.edit;
     const prodId = req.params.productId;
-    // const product = await Product.findByPk(prodId);
     const product = await productModel.findById(prodId);
-    // if (editMode !== "true") {
-    //     return res.redirect("/");
-    // }
-
     if (!product) {
         return res.redirect('/');
     }
@@ -44,25 +44,37 @@ const getEditProduct = async (req, res, next) => {
 const postEditProduct = async (req, res, next) => {
     const {title, imageUrl, price, description, productId: id} = req.body;
     let productToUpdate = await productModel.findById(id);
+    if (productToUpdate.userId.toString() !== req.user._id.toString()) {
+        return res.redirect("/");
+    }
     productToUpdate.title = title;
     productToUpdate.imageUrl = imageUrl;
     productToUpdate.price = price;
     productToUpdate.description = description;
     productToUpdate.productId = id;
-    await productToUpdate.save();
-
+    try {
+        await productToUpdate.save();
+    } catch (e) {
+        console.log(e);
+    }
     res.redirect("/admin/products");
 }
 const postDeleteProduct = async (req, res, next) => {
     const {productId: id} = req.body;
-    await productModel.findByIdAndDelete(id);
+    await productModel.deleteOne({_id: id, userId: req.user._id});
     res.redirect("/admin/products");
 }
 
 const getAdminProducts = async (req, res, next) => {
-    let products = (await productModel.find());
+    let products = await productModel.find({userId: req.user._id});
+    // let products = (await productModel.find());
     let path = "/admin/products"
-    res.render('admin/products', {path, docTitle: "Admin Products", prods: products.reverse(), isAuthenticated: req.session.isLoggedIn})
+    res.render('admin/products', {
+        path,
+        docTitle: "Admin Products",
+        prods: products.reverse(),
+        isAuthenticated: req.session.isLoggedIn
+    })
 }
 //
 

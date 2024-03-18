@@ -35,7 +35,7 @@ const getOrders = async (req, res, next) => {
 }
 //
 const getCart = async (req, res, next) => {
-    const cart = (await req.user.populate('cart.items.productId')).cart.items.map(x => ({
+    const cart = (await req.user.populate('cart.items.productId')).cart.items.filter(x=>x.productId!==null).map(x => (console.log(x),{
         ...x.productId._doc,
         quantity: x.quantity
     }));
@@ -78,17 +78,7 @@ const postCart = async (req, res, next) => {
     const result = await req.user.addToCart(product);
     res.redirect("/cart");
 }
-//
-// const postCheckout = (req, res, next) => {
-//     res.render("shop/checkout")
-// }
 
-// const getCheckout = (req, res, next) => {
-//     res.render("shop/checkout", {
-//
-//    isAuthenticated: req.session.isLoggedIn,path: "/checko ut"})
-// }
-//
 const getProductIndex = async (req, res, next) => {
     let products = await productModel.find();
     res.render('shop/index', {
