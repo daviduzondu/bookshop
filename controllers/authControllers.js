@@ -24,18 +24,18 @@ function getLogin(req, res, next) {
 
 async function postLogin(req, res, next) {
     const {email, password} = req.body;
-    const user = await userModel.findOne({email: email});
-    if (!user) {
-        req.flash('error', 'Invalid email or password');
-        return res.redirect("/login");
-    }
-    const correctPassword = await bcrypt.compare(password, user.password);
-    if (!correctPassword) {
-        req.flash('error', 'Invalid email or password');
-        return res.redirect("/login");
+    const errors = validationResult(req);
+    console.log(errors.array())
+    if (!errors.isEmpty()) {
+        return res.status(422).render("auth/login", {
+            path: "/login",
+            docTitle: "Login",
+            errorMessage: errors.array().map(x => `${x.msg}`),
+            oldInput: {email, password},
+            invalidInputs: errors.array().map(x => `${x.path}`)
+        });
     }
     req.session.isLoggedIn = true;
-    req.session.user = user;
     return req.session.save(err => {
         console.log(err);
         return res.redirect("/");
@@ -45,13 +45,13 @@ async function postLogin(req, res, next) {
 async function postSignup(req, res, next) {
     const {email, password, confirmPassword} = req.body;
     const errors = validationResult(req);
-    console.log(errors);
-    if (!errors.isEmpty()){
+    if (!errors.isEmpty()) {
         return res.status(422).render("auth/signup", {
             path: "/signup",
             docTitle: "Signup",
-            errorMessage: errors.array().map(x=>`${x.msg}`),
-            oldInput: {email, password, confirmPassword}
+            errorMessage: errors.array().map(x => `${x.msg}`),
+            oldInput: {email, password, confirmPassword},
+            invalidInputs: errors.array().map(x => `${x.path}`)
         });
     }
     try {

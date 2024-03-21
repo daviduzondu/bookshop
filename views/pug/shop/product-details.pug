@@ -12,7 +12,7 @@ block content
                 h1.product__title #{prods.title}
                 hr
                 .card__image
-                    img(src=`${prods.imageUrl || "https://cdn.pixabay.com/photo/2016/03/31/20/51/book-1296045_960_720.png"}` alt="A Book")
+                    img(src=`/${prods.image || "https://cdn.pixabay.com/photo/2016/03/31/20/51/book-1296045_960_720.png"}` alt="A Book")
                 h2.product__price $#{prods.price}
                 p.product__description #{prods.description}
                 if (isAuthenticated)

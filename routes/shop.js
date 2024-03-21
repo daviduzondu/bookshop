@@ -2,7 +2,9 @@ const express = require("express");
 const router = express.Router();
 const path = require("path");
 const { products} = require("./admin");
-const {getProducts, getCart, getOrders,  getProductIndex, getProduct, postCart, postDeleteCartItem, postOrder} = require("../controllers/shopControllers")
+const {getProducts, getCart, getOrders,  getProductIndex, getProduct, postCart, postDeleteCartItem, postOrder,
+    getInvoice
+} = require("../controllers/shopControllers")
 
 
 function isAuth(req, res, next){
@@ -19,5 +21,6 @@ router.get("/orders", isAuth,  getOrders);
 router.get("/products", getProducts);
 router.get("/products/:productId", getProduct);
 router.post("/create-order", isAuth, postOrder);
-router.post("/delete-from-cart", isAuth, postDeleteCartItem)
+router.post("/delete-from-cart", isAuth, postDeleteCartItem);
+router.get("/orders/:orderId", isAuth, getInvoice);
 module.exports = router;

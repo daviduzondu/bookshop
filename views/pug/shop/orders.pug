@@ -10,10 +10,12 @@ block content
             ul.orders
                 each order in orders
                     li.orders__item
-                        h1 # #{order._id}
+                        h3 Order # #{order._id} &nbsp;
+                            a(href=`/orders/${order._id}`).btn Get Invoice
                         ul.orders__products
                             each product in order.products
                                 li.orders__products-item
                                     strong #{product.productData.title} (#{product.quantity})
+
         else
             h1 Nothing to see here!

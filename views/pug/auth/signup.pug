@@ -14,15 +14,15 @@ block content
             each message in errorMessage
                 .user-message.user-message--error #{message}
                 br
-        form.login-form(action="/signup", method="POST" novalidate)
+        form.login-form(action="/signup", method="POST")
             .form-control
                 label(for="email") E-Mail
-                input(type="email", name="email", id="email", value=`${oldInput ? oldInput.email : ""}`)
+                input(type="email", name="email", id="email", value=`${oldInput ? oldInput.email : ""}`, class=`${invalidInputs && invalidInputs.includes("email") && "invalid"}`)
             .form-control
                 label(for="password") Password
-                input(type="password", name="password", id="password", value=`${oldInput ? oldInput.password:""}`)
+                input(type="password", name="password", id="password", value=`${oldInput ? oldInput.password:""}` class=`${invalidInputs && invalidInputs.includes("password") && "invalid"}`)
             .form-control
                 label(for="confirmPassword") Confirm Password
-                input(type="password", name="confirmPassword", id="confirmPassword", value=`${oldInput ? oldInput.confirmPassword:""}`)
+                input(type="password", name="confirmPassword", id="confirmPassword", value=`${oldInput ? oldInput.confirmPassword:""}` class=`${invalidInputs && invalidInputs.includes("confirmPassword") && "invalid"}`)
                 input(name="_csrf" value=`${csrfToken}` type="hidden")
             button.btn(type="submit") Sign up

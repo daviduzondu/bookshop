@@ -1,6 +1,10 @@
 const {productModel} = require("../models/product");
 const {v4: uuidv4} = require("uuid");
 const {orderModel} = require("../models/order");
+const fsPromises = require("fs/promises")
+const fs = require("fs");
+const {absolutePath} = require("../lib/helpers");
+const PDFDocument = require("pdfkit")
 // const {User} = require("../models/user");
 
 const getProducts = async (req, res, next) => {
@@ -35,7 +39,7 @@ const getOrders = async (req, res, next) => {
 }
 //
 const getCart = async (req, res, next) => {
-    const cart = (await req.user.populate('cart.items.productId')).cart.items.filter(x=>x.productId!==null).map(x => (console.log(x),{
+    const cart = (await req.user.populate('cart.items.productId')).cart.items.filter(x => x.productId !== null).map(x => (console.log(x), {
         ...x.productId._doc,
         quantity: x.quantity
     }));
@@ -54,21 +58,21 @@ const postDeleteCartItem = async (req, res, next) => {
 }
 const postOrder = async (req, res, next) => {
     try {
-    const products = (await req.user.populate("cart.items.productId")).cart.items.map(x => ({
-        quantity: x.quantity,
-        productData: {...x.productId._doc}
-    }))
-    const order = new orderModel({
-        user: {
-            email: req.user.email,
-            userId: req.user
-        },
-        products: products
-    });
-    req.user.clearCart();
-    order.save();
-    res.redirect("/orders");
-    } catch (e){
+        const products = (await req.user.populate("cart.items.productId")).cart.items.filter(x => x.productId !== null).map(x => ({
+            quantity: x.quantity,
+            productData: {...x.productId._doc}
+        }))
+        const order = new orderModel({
+            user: {
+                email: req.user.email,
+                userId: req.user
+            },
+            products: products
+        });
+        req.user.clearCart();
+        order.save();
+        res.redirect("/orders");
+    } catch (e) {
         console.log(e);
     }
 }
@@ -93,6 +97,40 @@ const getProductIndex = async (req, res, next) => {
     });
 }
 
+const getInvoice = async (req, res, next) => {
+    const orderId = req.params.orderId;
+    const invoicePath = absolutePath(`./invoices/Order from ${req.user._id} - ${orderId} - ${uuidv4()}`);
+    const order = await orderModel.findById(orderId);
+    if (order.user.userId.toString() !== req.user._id.toString()) {
+        return res.redirect("/login");
+    }
+    const invoiceName = `${orderId} - ${req.user._id}.pdf`;
+    try {
+        const pdfDoc = new PDFDocument();
+        pdfDoc.pipe(fs.createWriteStream(invoicePath));
+        res.setHeader("Content-Type", "application/pdf")
+        res.setHeader("Content-Disposition", `inline; filename="${invoiceName}"`);
+        pdfDoc.pipe(res);
+        pdfDoc.fontSize(36).text("Invoice\n", {
+            underline: true
+        });
+
+        let totalPrice = 0;
+        order.products.forEach(prod => {
+            totalPrice += Number(prod.quantity * prod.productData.price);
+            pdfDoc.fontSize(26).text(`${prod.productData.title} 
+             $${prod.productData.price} x ${prod.quantity} = $${Number(prod.quantity * prod.productData.price)}`);
+        })
+        pdfDoc.fontSize(26).text(`\nTotal Price:  $${totalPrice}`);
+        pdfDoc.end();
+    } catch (e) {
+        if (e) {
+            console.log(e);
+            return next(e);
+        }
+    }
+}
+
 module.exports = {
     getProducts,
     getProductIndex,
@@ -101,15 +139,8 @@ module.exports = {
     postDeleteCartItem,
     getCart,
     postOrder,
-    getOrders
+    getOrders,
+    getInvoice
 }
 
-
-//     getCart,
-//     postCart,
-//     postDeleteCartItem,
-//     postCheckout,
-//     postOrder,
-//     getCheckout,
-//     getOrders,
 // }

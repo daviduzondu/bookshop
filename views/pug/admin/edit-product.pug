@@ -9,19 +9,26 @@ block styles
 
 block content
     main
-        form.product-form(action=`${editing ? "/admin/edit-product" : "/admin/add-product"}` method="POST")
+        if (errorMessage && errorMessage.length > 0)
+            each message in errorMessage
+                .user-message.user-message--error #{message}
+                br
+        form.product-form(action=`${editing ? "/admin/edit-product" : "/admin/add-product"}` method="POST" novalidate enctype="multipart/form-data")
             .form-control
                 label(for="title") Title
-                input(type="text", name="title", id="title", value=`${editing ? product.title : ""}`)
+                input(type="text", name="title", id="title", value=`${editing ? product.title : oldInputs ? oldInputs.title : ""}` required)
             .form-control
-                label(for="imageUrl") Image URL
-                input(type="text", name="imageUrl", id="imageUrl", value=`${editing ? product.imageUrl : ""}`)
+                label(for="image") Title
+                input(type="file", name="image", id="image", required)
+            //.form-control
+                label(for="image") Image URL
+                input(type="text", name="image", id="image", value=`${editing ? product.image : oldInputs ? oldInputs.image : ""}` required)
             .form-control
                 label(for="price") Price
-                input(type="number", step="0.01", name="price", id="price", value=`${editing ? product.price : ""}`)
+                input(type="number", step="0.01", name="price", id="price", value=`${editing ? product.price : oldInputs ? oldInputs.price : ""}` required)
             .form-control
                 label(for="description") Description
-                textarea(name="description", id="description", rows="5") #{editing && product.description}
+                textarea(name="description", id="description", rows="5" required) #{editing ? product.description : oldInputs ? oldInputs.description : ""}
                 input(name="_csrf" value=`${csrfToken}` type="hidden")
             if (editing)
                 input(type="hidden", value=product._id, name="productId")
