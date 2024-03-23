@@ -19,10 +19,10 @@ block content
                             p.product__description #{product.description}
                             .card__actions
                                 a.btn(href=`/admin/edit-product/${product._id}`) Edit
-                                form(action="/admin/delete-product" method="POST")
-                                    input(name="_csrf" value=`${csrfToken}` type="hidden")
-                                    input(type="hidden" name="productId" value=`${product._id}`)
-                                    button.btn Delete
-
+                                input(name="_csrf" value=`${csrfToken}` type="hidden")
+                                input(type="hidden" name="productId" value=`${product._id}`)
+                                button(type="button" onclick="deleteProduct(this)").btn Delete
+            section.pagination
+                include ../layouts/pagination
         else
             h1 Nothing found over here!

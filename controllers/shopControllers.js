@@ -8,12 +8,14 @@ const PDFDocument = require("pdfkit")
 // const {User} = require("../models/user");
 
 const getProducts = async (req, res, next) => {
-    let products = await productModel.find();
+    let products = await productModel.find().skip((req.currentPage - 1) * req.itemsPerPage).limit(req.itemsPerPage);
     res.render('shop/product-list', {
         isAuthenticated: req.session.isLoggedIn,
         prods: products.reverse(),
         docTitle: 'Shop',
         path: '/products',
+        currentPage: req.currentPage,
+        lastPage: req.lastPage,
         hasProducts: products.length > 0,
         activeShop: true,
         productCSS: true,
@@ -84,12 +86,16 @@ const postCart = async (req, res, next) => {
 }
 
 const getProductIndex = async (req, res, next) => {
-    let products = await productModel.find();
+
+    let products = await productModel.find().skip((req.currentPage - 1) * req.itemsPerPage).limit(req.itemsPerPage);
     res.render('shop/index', {
         isAuthenticated: req.session.isLoggedIn,
         prods: products.reverse(),
         docTitle: 'Shop',
         path: '/',
+        // totalProducts: totalItems ,
+        currentPage: req.currentPage,
+        lastPage: req.lastPage,
         hasProducts: products.length > 0,
         activeShop: true,
         productCSS: true,

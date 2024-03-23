@@ -24,5 +24,7 @@ block content
                                         input(name="_csrf" value=`${csrfToken}` type="hidden")
                                         button.btn(type="submit") Add to Cart
                                         input(type="hidden" name="productId" value=`${product._id}`)
+            section.pagination
+                include ../layouts/pagination
         else
             h1 Nothing found over here!

@@ -46,7 +46,6 @@ const postAddProduct = async (req, res, next) => {
 const getEditProduct = async (req, res, next) => {
     const prodId = req.params.productId;
     const product = await productModel.findById(prodId);
-    console.log(product);
     if (!product) {
         return res.redirect('/');
     }
@@ -98,27 +97,29 @@ const postEditProduct = async (req, res, next) => {
     }
     res.redirect("/admin/products");
 }
-const postDeleteProduct = async (req, res, next) => {
-    const {productId: id} = req.body;
+const deleteProduct = async (req, res, next) => {
+    const {productId: id} = req.params;
     try {
         await deleteFile((await productModel.findOne({_id: id, userId: req.user._id})).image);
         await productModel.deleteOne({_id: id, userId: req.user._id});
     } catch (e) {
         console.error(e);
-        return next(e.message);
+        return res.status(500).json({error:true, message: "Deleting product failed!"});
     }
-    res.redirect("/admin/products");
+    res.status(200).json({success:true, productId:id, message:"Delete action successful"});
+    // res.redirect("/admin/products");
 }
 
 const getAdminProducts = async (req, res, next) => {
-    let products = await productModel.find({userId: req.user._id});
-    console.log(products);
+
+    let products = await productModel.find({userId: req.user._id}).skip((req.currentPage - 1) * req.itemsPerPage).limit(req.itemsPerPage);
     // let products = (await productModel.find());
     let path = "/admin/products"
     res.render('admin/products', {
-        path, docTitle: "Admin Products", prods: products.reverse(), isAuthenticated: req.session.isLoggedIn
+        path, docTitle: "Admin Products", prods: products.reverse(), currentPage: req.currentPage,
+        lastPage: req.lastPage, isAuthenticated: req.session.isLoggedIn
     })
 }
 //
 
-module.exports = {getAddProduct, postAddProduct, getAdminProducts, getEditProduct, postEditProduct, postDeleteProduct}
+module.exports = {getAddProduct, postAddProduct, getAdminProducts, getEditProduct, postEditProduct, deleteProduct}
